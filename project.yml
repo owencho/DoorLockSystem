@@ -23,7 +23,7 @@
 :environment:
 
 :extension:
-  :executable: .out
+  :executable: .exe
 
 :paths:
   :test:

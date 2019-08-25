@@ -7,6 +7,7 @@ typedef enum{
     DOOR_CLOSED_EVENT,
     VALID_DOOR_ACCESS_EVENT,
     INVALID_DOOR_ACCESS_EVENT,
+    IDLE_EVENT,
 }EventType;
 
 typedef struct Event Event;
