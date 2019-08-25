@@ -2,6 +2,7 @@
 #include "Door.h"
 #include "DoorLock.h"
 #include "Beep.h"
+#include "Timer.h"
 
 DoorInfo doorInfo = {DOOR_INIT_STATE};
 
@@ -69,5 +70,6 @@ void handleDoor(Event *evt){
                 doorInfo.state = DOOR_OPENED_STATE;
             }
             break;
+        default: doorInfo.state = DOOR_INIT_STATE;
     }
 }
