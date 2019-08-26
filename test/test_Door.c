@@ -102,7 +102,7 @@ void test_Door_init_state(void){
     initTimerAndLowLevelHardware(timeline,(sizeof(timeline)/sizeof(uint32_t)),
                                  solenoidAction,beepAction);
     // init state
-    // Expected DOOR_CLOSED_AND_LOCKED_STATE
+    // Expected DOOR_CLOSED_AND_LOCKED_STATE after init state
     handleDoor(&evt,&doorInfo);
     TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_LOCKED_STATE,doorInfo.state);
     TEST_ASSERT_EQUAL(0,doorInfo.time);
@@ -197,7 +197,7 @@ void test_Door_validaccess_and_open_then_close(void){
     OFF ,ON,-1            // Solenoid become OFF at first as valid access detected
     };                    // then ON due to the door locked after door closed
     StartStop beepAction[]={
-    STOP  ,-1             // beep is STOP as no event trigger the beep to sound
+    STOP  ,-1             // beep is STOP as no event trigger it to beep
     };
     initTimerAndLowLevelHardware(timeline,(sizeof(timeline)/sizeof(uint32_t)),
                                  solenoidAction,beepAction);
@@ -233,7 +233,7 @@ void test_Door_validaccess_and_did_not_opened_wait_10_sec_stop(void){
     OFF ,ON,-1          // Solenoid become OFF at first as valid access detected
     };                  // then ON due to the door locked after 10 second
     StartStop beepAction[]={
-    STOP , START ,STOP,-1
+    STOP ,-1           // beep is STOP as no event trigger it to beep
     };
     initTimerAndLowLevelHardware(timeline,(sizeof(timeline)/sizeof(uint32_t)),
                                  solenoidAction,beepAction);
