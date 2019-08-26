@@ -6,29 +6,7 @@
 
 DoorInfo doorInfo = {DOOR_INIT_STATE};
 
-char * getSolenoidTurnString(OnOff state){
-  switch(state){
-    case ON:
-        return "ON";
-        break;
-    case OFF:
-        return "OFF";
-        break;
-    default : return NULL;
-  }
-}
 
-char * getBeepActionString(StartStop action){
-  switch(action){
-    case START:
-        return "START";
-        break;
-    case STOP:
-        return "STOP";
-        break;
-    default : return NULL;
-  }
-}
 
 void handleDoor(Event *evt, DoorInfo * dInfo){
     switch(doorInfo.state){
@@ -64,10 +42,7 @@ void handleDoor(Event *evt, DoorInfo * dInfo){
             if(evt-> type ==DOOR_OPENED_EVENT){
                 doorInfo.state = DOOR_OPENED_STATE;
             }
-            else if (doorInfo.time <= 10){
-                doorInfo.state = DOOR_CLOSED_AND_UNLOCKED_STATE;
-            }
-            else{
+            else if (doorInfo.time > 10){
                 doorInfo.state = DOOR_CLOSED_AND_LOCKED_STATE;
                 lockDoor();
             }

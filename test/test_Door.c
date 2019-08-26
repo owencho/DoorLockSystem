@@ -4,6 +4,7 @@
 #include "OnOff.h"
 #include "Event.h"
 #include "DoorLock.h"
+#include "Convert.h"
 #include "CustomUnityMsg.h"
 #include "mock_Timer.h"
 #include "mock_Solenoid.h"
@@ -20,7 +21,8 @@ uint32_t fake_getTime(int NumCalls){
         printf("Current time get is %d \n",timelinePtr[NumCalls]);
         return timelinePtr[NumCalls];
     }
-    TEST_FAIL_MESSAGE("getTime() called too many time than expected ");
+    testFailMessage("getTime() called too many time %d than expected %d"
+                    ,NumCalls,numberOfTimelines);
     return 0;
 }
 
@@ -84,14 +86,15 @@ void initTimerAndLowLevelHardware(uint32_t timeline[],int timelineNumber,
 void setUp(void){}
 void tearDown(void){}
 
+// it will lock the door and stop beep when it reach INIT_STATE
 void test_Door_init_state(void){
     Event evt = {DOOR_INIT_EVENT,NULL};
     DoorInfo doorInfo;
     uint32_t timeline[] ={
-    0,1,          // time generated for system to check the time
+    0,          // time generated for system to check the time
     };
     OnOff solenoidAction[]={
-    ON ,-1                 // Solenoid will remain ON as init state turn on the solenoid
+    ON ,-1        // Solenoid will remain ON as init state turn on the solenoid
     };
     StartStop beepAction[]={
     STOP,-1      // stop beeping when reached init state
@@ -107,7 +110,7 @@ void test_Door_init_state(void){
 
 // this code test the handleDoor module when it detected as INVALID DOOR access
 // this module will start to beep when invalid door access event detected
-// the beep will remain for 3 second only
+// the beep will remain for 3 second only and then will return to DOOR_CLOSED_AND_LOCKED_STATE
 void test_Door_invalid_access_and_beep(void){
     Event evt = {INVALID_DOOR_ACCESS_EVENT,NULL};
     DoorInfo doorInfo;
@@ -116,10 +119,10 @@ void test_Door_invalid_access_and_beep(void){
     };
     OnOff solenoidAction[]={
     ON ,-1                 // Solenoid will remain ON as invalid access detected
-    };                      // invalid access wouldnt turn off the solenoid
+    };                     // invalid access wouldnt turn off the solenoid
     StartStop beepAction[]={
-    START,STOP,-1
-    };
+    START,STOP,-1          // beep START when invalid access event detected
+};                     // beep STOP after 3 second of beeping at DOOR_CLOSED_AND_LOCKED_BEEP_STATE
     initTimerAndLowLevelHardware(timeline,(sizeof(timeline)/sizeof(uint32_t)),
                                  solenoidAction,beepAction);
     // in closed and locked state with invalid access card detected
@@ -141,22 +144,24 @@ void test_Door_invalid_access_and_beep(void){
     TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_LOCKED_STATE,doorInfo.state);
 }
 
+// this test module is used to test the door system received a VALID_DOOR_ACCESS_EVENT
+// and user opened the door for more than 15 sec
+// the system will beep after the door opened for more than 15 second
+// the system only stop the beep and lock the door after the user close the door
 void test_Door_validaccess_and_open_until_door_beep(void){
-    Event evt = {DOOR_CLOSED_AND_LOCKED_STATE,NULL};
+    Event evt = {VALID_DOOR_ACCESS_EVENT,NULL};
     DoorInfo doorInfo;
     uint32_t timeline[] ={
-    0,10,10,16,16
+    0,10,10,16,16                   // time generated for system to check the time
     };
     OnOff solenoidAction[]={
-    OFF ,ON,-1
-    };
+    OFF ,ON,-1                      // Solenoid become OFF at first as valid access detected
+    };                              // then ON due to the door locked after door closed
     StartStop beepAction[]={
-    START ,STOP,-1
-    };
+    START ,STOP,-1                 // beep become START when user opened door for more than 15 second
+};                                 // beep become STOP after user closed the door
     initTimerAndLowLevelHardware(timeline,(sizeof(timeline)/sizeof(uint32_t)),
                                  solenoidAction,beepAction);
-    handleDoor(&evt,&doorInfo); // init the door system
-    evt.type = VALID_DOOR_ACCESS_EVENT;
     // in closed and locked state with valid access card detected
     // Expected DOOR_CLOSED_AND_UNLOCKED_STATE
     handleDoor(&evt,&doorInfo);
@@ -175,43 +180,58 @@ void test_Door_validaccess_and_open_until_door_beep(void){
     evt.type = DOOR_CLOSED_EVENT;
     handleDoor(&evt,&doorInfo); //DOOR CLOSED and beep stop
     TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_LOCKED_STATE,doorInfo.state);
+    TEST_ASSERT_EQUAL(16,doorInfo.time);
 }
 
+
+// this test module is used to test the door system received a VALID_DOOR_ACCESS_EVENT
+// and user  opened the door and close within 15 second which wouldnt beep
+// the system only lock the door after the door was closed
 void test_Door_validaccess_and_open_then_close(void){
     Event evt = {VALID_DOOR_ACCESS_EVENT,NULL};
     DoorInfo doorInfo;
     uint32_t timeline[] ={
-    0,10,10,16,16,17,50,60,100,120
+    0,9,10,12             // time generated for system to check the time
     };
     OnOff solenoidAction[]={
-    OFF ,ON,-1
-    };
+    OFF ,ON,-1            // Solenoid become OFF at first as valid access detected
+    };                    // then ON due to the door locked after door closed
     StartStop beepAction[]={
-    STOP , START ,STOP,-1
+    STOP  ,-1             // beep is STOP as no event trigger the beep to sound
     };
     initTimerAndLowLevelHardware(timeline,(sizeof(timeline)/sizeof(uint32_t)),
                                  solenoidAction,beepAction);
     // in closed and locked state with valid access card detected
     // Expected DOOR_CLOSED_AND_UNLOCKED_STATE
     handleDoor(&evt,&doorInfo);
+    TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_UNLOCKED_STATE,doorInfo.state);
+    TEST_ASSERT_EQUAL(0,doorInfo.time);
     evt.type = DOOR_OPENED_EVENT;
     // door detected open
-    // Expected DOOR_OPENED_STATE
+    // Expected DOOR_OPENED_STATE and 9 sec on timing
     handleDoor(&evt,&doorInfo);
+    TEST_ASSERT_EQUAL(DOOR_OPENED_STATE,doorInfo.state);
+    TEST_ASSERT_EQUAL(9,doorInfo.time);
     handleDoor(&evt,&doorInfo); //10 sec detected so no beep
-    evt.type = DOOR_CLOSED_EVENT;
-    handleDoor(&evt,&doorInfo); //DOOR CLOSED
+    TEST_ASSERT_EQUAL(10,doorInfo.time);
+    evt.type = DOOR_CLOSED_EVENT;   // the door is closed
+    handleDoor(&evt,&doorInfo); //DOOR CLOSED and 12 second timer detected
+    TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_LOCKED_STATE,doorInfo.state);
+    TEST_ASSERT_EQUAL(12,doorInfo.time);
 }
 
+// this test module is used to test the door system received a VALID_DOOR_ACCESS_EVENT
+// and user did not opened the door
+// the system only lock the door after 10 second when user doesnt opened the door
 void test_Door_validaccess_and_did_not_opened_wait_10_sec_stop(void){
     Event evt = {VALID_DOOR_ACCESS_EVENT,NULL};
     DoorInfo doorInfo;
     uint32_t timeline[] ={
-    0,2,3,17
+    0,2,3,17            // time generated for system to check the time
     };
     OnOff solenoidAction[]={
-    OFF ,ON,-1
-    };
+    OFF ,ON,-1          // Solenoid become OFF at first as valid access detected
+    };                  // then ON due to the door locked after 10 second
     StartStop beepAction[]={
     STOP , START ,STOP,-1
     };
@@ -220,9 +240,18 @@ void test_Door_validaccess_and_did_not_opened_wait_10_sec_stop(void){
     // in closed and locked state with valid access card detected
     // Expected DOOR_CLOSED_AND_UNLOCKED_STATE
     handleDoor(&evt,&doorInfo); // 0 sec detected
+    TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_UNLOCKED_STATE,doorInfo.state);
+    TEST_ASSERT_EQUAL(0,doorInfo.time);
     handleDoor(&evt,&doorInfo); // 2 sec detected
+    TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_UNLOCKED_STATE,doorInfo.state);
+    TEST_ASSERT_EQUAL(2,doorInfo.time);
     handleDoor(&evt,&doorInfo); // 3 sec detected
-    handleDoor(&evt,&doorInfo); // 17 sec detected & DOOR locked
+    TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_UNLOCKED_STATE,doorInfo.state);
+    TEST_ASSERT_EQUAL(3,doorInfo.time);
+    handleDoor(&evt,&doorInfo); // 17 sec detected & DOOR locked & returned to DOOR_CLOSED_AND_LOCKED_STATE
+    TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_LOCKED_STATE,doorInfo.state);
+    TEST_ASSERT_EQUAL(17,doorInfo.time);
     evt.type = IDLE_EVENT;
-    handleDoor(&evt,&doorInfo); // returned to DOOR_CLOSED_AND_LOCKED_STATE
+    handleDoor(&evt,&doorInfo); // check is system still remain on DOOR_CLOSED_AND_LOCKED_STATE
+    TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_LOCKED_STATE,doorInfo.state);
 }

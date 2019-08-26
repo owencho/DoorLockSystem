@@ -4,8 +4,6 @@
 #include "OnOff.h"
 #include "Event.h"
 
-#define _STRINGIFY(x)     #x
-#define STRINGIFY(x)     _STRINGIFY(x)
 
 typedef struct DoorInfo DoorInfo ;
 
@@ -23,8 +21,7 @@ struct DoorInfo{
 };
 
 void handleDoor(Event *evt,DoorInfo * dInfo);
-char * getSolenoidTurnString(OnOff state);
-char * getBeepActionString(StartStop action);
+
 
 
 #endif // _DOOR_H
