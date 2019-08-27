@@ -29,7 +29,12 @@ void handleDoor(Event *evt, DoorInfo * dInfo){
             }
             break;
         case DOOR_CLOSED_AND_LOCKED_BEEP_STATE:
-            if(doorInfo.time <= 3){
+            if(evt-> type ==VALID_DOOR_ACCESS_EVENT){
+                beeping(STOP);
+                unlockDoor();
+                doorInfo.state = DOOR_CLOSED_AND_UNLOCKED_STATE;
+            }
+            else if(doorInfo.time <= 3){
                 doorInfo.time = getTime();
             }
             else{
@@ -50,7 +55,9 @@ void handleDoor(Event *evt, DoorInfo * dInfo){
         case DOOR_OPENED_STATE:
             doorInfo.time = getTime();
             if(evt-> type ==DOOR_CLOSED_EVENT){
-                beeping(STOP);
+                if(doorInfo.time > 15){
+                    beeping(STOP);
+                }
                 lockDoor();
                 doorInfo.state = DOOR_CLOSED_AND_LOCKED_STATE;
             }

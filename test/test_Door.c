@@ -139,8 +139,51 @@ void test_Door_invalid_access_and_beep(void){
     handleDoor(&evt,&doorInfo); //4 sec detected , stop beeping
     TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_LOCKED_BEEP_STATE,doorInfo.state);
     TEST_ASSERT_EQUAL(4,doorInfo.time);
-    evt.type = IDLE_EVENT;
+    evt.type = IDLE_EVENT; // no event happened
     handleDoor(&evt,&doorInfo); //returned to DOOR_CLOSED_AND_LOCKED_STATE
+    TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_LOCKED_STATE,doorInfo.state);
+}
+
+// this code test the handleDoor module when it detected as INVALID DOOR access
+// this module will start to beep when invalid door access event detected
+// after that detected VALID_DOOR_ACCESS_EVENT
+// then it will go to DOOR_CLOSED_AND_UNLOCKED_STATE and stop beep
+void test_Door_invalid_access_and_beep_and_valid_access_detected (void){
+    Event evt = {INVALID_DOOR_ACCESS_EVENT,NULL};
+    DoorInfo doorInfo;
+    uint32_t timeline[] ={
+    0,1,2,3,4,                    // time generated for system to check the time
+    };
+    OnOff solenoidAction[]={
+    ON ,OFF, ON,-1               //Solenoid will remain ON as invalid access detected
+  };                            //solenoid turn off later as valid access detected and on
+                               //after door closed
+    StartStop beepAction[]={
+    START,STOP,-1                // beep START when invalid access event detected
+};                              // beep STOP after valid access detected
+
+    initTimerAndLowLevelHardware(timeline,(sizeof(timeline)/sizeof(uint32_t)),
+                                 solenoidAction,beepAction);
+    // in closed and locked state with invalid access card detected
+    // Expected DOOR_CLOSED_AND_LOCKED_BEEP_STATE
+    handleDoor(&evt,&doorInfo); //invalid access detected , start beep
+    TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_LOCKED_BEEP_STATE,doorInfo.state);
+    TEST_ASSERT_EQUAL(0,doorInfo.time);
+    evt.type = VALID_DOOR_ACCESS_EVENT;
+    handleDoor(&evt,&doorInfo);
+    //valid door access detected ,
+    //it will go to DOOR_CLOSED_AND_UNLOCKED_STATE and stop beeping
+    TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_UNLOCKED_STATE,doorInfo.state);
+    handleDoor(&evt,&doorInfo);
+    TEST_ASSERT_EQUAL(1,doorInfo.time);
+    evt.type = DOOR_OPENED_EVENT;
+    handleDoor(&evt,&doorInfo); //DOOR opened and expected DOOR_OPENED_STATE
+    TEST_ASSERT_EQUAL(2,doorInfo.time);
+    TEST_ASSERT_EQUAL(DOOR_OPENED_STATE,doorInfo.state);
+    handleDoor(&evt,&doorInfo);
+    TEST_ASSERT_EQUAL(3,doorInfo.time);
+    evt.type = DOOR_CLOSED_EVENT; // door closed
+    handleDoor(&evt,&doorInfo); //expect returned to DOOR_CLOSED_AND_LOCKED_STATE
     TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_LOCKED_STATE,doorInfo.state);
 }
 
