@@ -18,6 +18,7 @@ void test_CustomUnityMsg_produce_my_name_and_age_error_message(void)
     int age = 32;
     testFailMessage("My name is %s and my age is %d"
                     ,str,age);
+    // expected error message as "My name is alibaba and my age is 32"
 }
 
 void test_CustomUnityMsg_produce_float_value_error_message(void)
@@ -26,4 +27,5 @@ void test_CustomUnityMsg_produce_float_value_error_message(void)
     float mark = 32.34567;
     testFailMessage("My %s final exam scored %.5f"
                     ,str,mark);
+    // expected error message as "My maths final exam scored 32.34567"
 }

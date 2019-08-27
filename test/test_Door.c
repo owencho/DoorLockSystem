@@ -166,9 +166,9 @@ void test_Door_invalid_access_and_beep_and_valid_access_detected (void){
     0,1,2,3,4,                    // time generated for system to check the time
     };
     OnOff solenoidAction[]={
-    ON ,OFF, ON,-1               //Solenoid will remain ON as invalid access detected
-  };                            //solenoid turn off later as valid access detected and on
-                               //after door closed
+    OFF, ON,-1                  //solenoid turn off as valid access detected
+  };                            //and on after door closed
+
     StartStop beepAction[]={
     START,STOP,-1                // beep START when invalid access event detected
 };                              // beep STOP after valid access detected
@@ -193,7 +193,7 @@ void test_Door_invalid_access_and_beep_and_valid_access_detected (void){
     TEST_ASSERT_EQUAL(DOOR_OPENED_STATE,doorInfo.state);
     handleDoor(&evt,&doorInfo);
     TEST_ASSERT_EQUAL(3,doorInfo.time); // 3 second detected
-    evt.type = DOOR_CLOSED_EVENT; // door closed
+    evt.type = DOOR_CLOSED_EVENT; // door is closed
     handleDoor(&evt,&doorInfo); //expect returned to DOOR_CLOSED_AND_LOCKED_STATE
     TEST_ASSERT_EQUAL(4,doorInfo.time); // 4 second detected
     TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_LOCKED_STATE,doorInfo.state);
@@ -272,7 +272,7 @@ void test_Door_validaccess_and_open_then_close(void){
     handleDoor(&evt,&doorInfo); //10 sec detected so no beep
     TEST_ASSERT_EQUAL(10,doorInfo.time);
     evt.type = DOOR_CLOSED_EVENT;   // the door is closed
-    handleDoor(&evt,&doorInfo); //DOOR CLOSED and 12 second timer detected
+    handleDoor(&evt,&doorInfo); //DOOR CLOSED and locked and 12 second timer detected
     TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_LOCKED_STATE,doorInfo.state);
     TEST_ASSERT_EQUAL(12,doorInfo.time);
 }
