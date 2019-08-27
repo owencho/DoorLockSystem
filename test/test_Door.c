@@ -120,6 +120,7 @@ void test_Door_init_state(void){
 // this code test the handleDoor module when it detected as INVALID DOOR access
 // this module will start to beep when invalid door access event detected
 // the beep will remain for 3 second only and then will return to DOOR_CLOSED_AND_LOCKED_STATE
+// refer to the state diagram(Resources\images\state diagram.png) for more information
 void test_Door_invalid_access_and_beep(void){
     Event evt = {INVALID_DOOR_ACCESS_EVENT,NULL};
     DoorInfo doorInfo;
@@ -157,6 +158,7 @@ void test_Door_invalid_access_and_beep(void){
 // this module will start to beep when invalid door access event detected
 // after that detected VALID_DOOR_ACCESS_EVENT
 // then it will go to DOOR_CLOSED_AND_UNLOCKED_STATE and stop beep
+// refer to the state diagram(Resources\images\state diagram.png) for more information
 void test_Door_invalid_access_and_beep_and_valid_access_detected (void){
     Event evt = {INVALID_DOOR_ACCESS_EVENT,NULL};
     DoorInfo doorInfo;
@@ -177,7 +179,7 @@ void test_Door_invalid_access_and_beep_and_valid_access_detected (void){
     // Expected DOOR_CLOSED_AND_LOCKED_BEEP_STATE
     handleDoor(&evt,&doorInfo); //invalid access detected , start beep
     TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_LOCKED_BEEP_STATE,doorInfo.state);
-    TEST_ASSERT_EQUAL(0,doorInfo.time);
+    TEST_ASSERT_EQUAL(0,doorInfo.time); // 0 second detected
     evt.type = VALID_DOOR_ACCESS_EVENT;
     handleDoor(&evt,&doorInfo);
     //valid door access detected ,
@@ -187,12 +189,13 @@ void test_Door_invalid_access_and_beep_and_valid_access_detected (void){
     TEST_ASSERT_EQUAL(1,doorInfo.time);
     evt.type = DOOR_OPENED_EVENT;
     handleDoor(&evt,&doorInfo); //DOOR opened and expected DOOR_OPENED_STATE
-    TEST_ASSERT_EQUAL(2,doorInfo.time);
+    TEST_ASSERT_EQUAL(2,doorInfo.time); // 2 second detected
     TEST_ASSERT_EQUAL(DOOR_OPENED_STATE,doorInfo.state);
     handleDoor(&evt,&doorInfo);
-    TEST_ASSERT_EQUAL(3,doorInfo.time);
+    TEST_ASSERT_EQUAL(3,doorInfo.time); // 3 second detected
     evt.type = DOOR_CLOSED_EVENT; // door closed
     handleDoor(&evt,&doorInfo); //expect returned to DOOR_CLOSED_AND_LOCKED_STATE
+    TEST_ASSERT_EQUAL(4,doorInfo.time); // 4 second detected
     TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_LOCKED_STATE,doorInfo.state);
 }
 
@@ -200,6 +203,7 @@ void test_Door_invalid_access_and_beep_and_valid_access_detected (void){
 // and user opened the door for more than 15 sec
 // the system will beep after the door opened for more than 15 second
 // the system only stop the beep and lock the door after the user close the door
+// refer to the state diagram(Resources\images\state diagram.png) for more information
 void test_Door_validaccess_and_open_until_door_beep(void){
     Event evt = {VALID_DOOR_ACCESS_EVENT,NULL};
     DoorInfo doorInfo;
@@ -239,6 +243,7 @@ void test_Door_validaccess_and_open_until_door_beep(void){
 // this test module is used to test the door system received a VALID_DOOR_ACCESS_EVENT
 // and user  opened the door and close within 15 second which wouldnt beep
 // the system only lock the door after the door was closed
+// refer to the state diagram(Resources\images\state diagram.png) for more information
 void test_Door_validaccess_and_open_then_close(void){
     Event evt = {VALID_DOOR_ACCESS_EVENT,NULL};
     DoorInfo doorInfo;
@@ -275,6 +280,7 @@ void test_Door_validaccess_and_open_then_close(void){
 // this test module is used to test the door system received a VALID_DOOR_ACCESS_EVENT
 // and user did not opened the door
 // the system only lock the door after 10 second when user doesnt opened the door
+// refer to the state diagram(Resources\images\state diagram.png) for more information
 void test_Door_validaccess_and_did_not_opened_wait_10_sec_stop(void){
     Event evt = {VALID_DOOR_ACCESS_EVENT,NULL};
     DoorInfo doorInfo;
