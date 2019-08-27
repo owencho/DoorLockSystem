@@ -15,7 +15,9 @@ int numberOfTimelines ;
 OnOff * solenoidScript = NULL;
 StartStop * beepingScript = NULL;
 
-
+// the function that is used to fake the getTime function
+//it will print current time when numberOfTimelines larger than NumCalls
+// it will generate error message when number of call more than the value inside the array
 uint32_t fake_getTime(int NumCalls){
     if(NumCalls < numberOfTimelines){
         printf("Current time get is %d \n",timelinePtr[NumCalls]);
@@ -25,7 +27,10 @@ uint32_t fake_getTime(int NumCalls){
                     ,NumCalls,numberOfTimelines);
     return 0;
 }
-
+// the function that is used to fake the solenoidTurn function
+//it will print Door is locked or unlocked depends on the input is ON or off
+// it will generate called too many time error when the solenoidScript pointed to -1 when testing
+// it will also generate error when expected state are not equal to generated state
 void fake_solenoidTurn(OnOff state,int NumCalls){
   char* generatedState = NULL;
   char* expectedState = NULL;
@@ -41,14 +46,17 @@ void fake_solenoidTurn(OnOff state,int NumCalls){
     }
 
     if(solenoidScript[NumCalls] != state){
-      generatedState = getSolenoidTurnString(state);
+      generatedState = getSolenoidTurnString(state);  // function that get string depend on ON or OFF
       expectedState = getSolenoidTurnString(solenoidScript[NumCalls]);
       testFailMessage("Solenoid state is incorrect at %d ,expected %s but detected %s"
                       ,NumCalls,expectedState,generatedState);
     }
 
 }
-
+// the function that is used to fake the beeping function
+//it will printf beep or not beep depends on the input is START or STOP
+// it will generate called too many time error when the beepingScript pointed to -1 when testing
+// it will also generate error when expected action are not equal to generated action
 void fake_beeping(StartStop action,int NumCalls){
     char* generatedAction = NULL;
     char* expectedAction = NULL;
@@ -70,7 +78,8 @@ void fake_beeping(StartStop action,int NumCalls){
     }
 
 }
-
+// this function is used to initialize the fake_beeping ,fake_solenoidTurn and fake_getTime
+// by taking in the timeline value and all the solenoidAction and beepAction array
 void initTimerAndLowLevelHardware(uint32_t timeline[],int timelineNumber,
                                   OnOff * solenoidActionPtr,
                                   StartStop * beepActionPtr){
