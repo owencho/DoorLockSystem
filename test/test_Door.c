@@ -148,22 +148,21 @@ void test_Door_init_state(void){
     TEST_ASSERT_EQUAL(0,doorInfo.time);
 }
 
-// DOOR_CLOSED_AND_LOCKED_STATE loop on same state with other event that wont change state
-// this code test the handleDoor module when it detected as other state
+// DOOR_CLOSED_AND_LOCKED_STATE remain on same state with other event that wont change state
 // this module will start and remain on DOOR_CLOSED_AND_LOCKED_STATE
 // this test shouldnt happened in real life and it tested to avoid if unexpected event happened
 // refer to the state diagram(Resources\images\state diagram.png) for more information
-void test_Door_DOOR_CLOSED_AND_LOCKED_STATE_loop_as_other_event_detected(void){
+void test_Door_DOOR_CLOSED_AND_LOCKED_STATE_remain_as_other_event_detected(void){
     Event evt = {DOOR_OPENED_EVENT,NULL};
     DoorInfo doorInfo = {DOOR_CLOSED_AND_LOCKED_STATE};
     uint32_t timeline[] ={
-              // time generated for system empty as it doesnt call getTime
+              // time generated for system empty as it doesnt call getTime for this test
     };
     OnOff solenoidAction[]={
     -1       //Array solenoidAction only have -1 as it doesnt call lockDoor and unlockDoor
     };
     StartStop beepAction[]={
-    -1              //Array beepAction only have -1 as it doesnt call beeping()
+    -1              //Array beepAction only have -1 as it doesnt call beeping() for this test
     };
     initTimerAndLowLevelHardware(timeline,(sizeof(timeline)/sizeof(uint32_t)),
                                  solenoidAction,beepAction);
@@ -243,7 +242,6 @@ void test_Door_DOOR_CLOSED_AND_LOCKED_STATE_invalid_access(void){
 }
 
 // DOOR_CLOSED_AND_LOCKED_BEEP_STATE beep 3 second and go back DOOR_CLOSED_AND_LOCKED_STATE
-// this code test the handleDoor module when it detected as INVALID DOOR access
 // this module will start to beep when invalid door access event detected
 // the beep will remain for 3 second only and then will return to DOOR_CLOSED_AND_LOCKED_STATE
 // refer to the state diagram(Resources\images\state diagram.png) for more information
@@ -280,13 +278,9 @@ void test_Door_DOOR_CLOSED_AND_LOCKED_BEEP_STATE_invalid_access_and_beep_3_secon
     handleDoor(&evt,&doorInfo); //expect remain at DOOR_CLOSED_AND_LOCKED_STATE
     TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_LOCKED_STATE,doorInfo.state);
 }
-//DOOR_CLOSED_AND_LOCKED_BEEP_STATE loop on same state with other event that wont change state
-// this code test the handleDoor module when it detected as INVALID DOOR access
-// this module will start to beep when invalid door access event detected
-// after that detected other event
-// then it will loop back DOOR_CLOSED_AND_LOCKED_BEEP_STATE
+//DOOR_CLOSED_AND_LOCKED_BEEP_STATE remain on same state with other event that wont change state
 // refer to the state diagram(Resources\images\state diagram.png) for more information
-void test_Door_DOOR_CLOSED_AND_LOCKED_BEEP_STATE_loop_with_other_event(void){
+void test_Door_DOOR_CLOSED_AND_LOCKED_BEEP_STATE_remain_with_other_event(void){
     Event evt = {INVALID_DOOR_ACCESS_EVENT,NULL};
     DoorInfo doorInfo = {DOOR_CLOSED_AND_LOCKED_STATE};
     uint32_t timeline[] ={
@@ -323,7 +317,7 @@ void test_Door_DOOR_CLOSED_AND_LOCKED_BEEP_STATE_loop_with_other_event(void){
     TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_LOCKED_BEEP_STATE,doorInfo.state);
     TEST_ASSERT_EQUAL(3,doorInfo.time); // 3 second detected
     TEST_ASSERT_EQUAL(3,doorInfo.timeDiff); // expected 3 second difference from previous state
-    // the beep only stop after 3 second
+    // the beep only stop after 3 second difference from previous state
 }
 
 // DOOR_CLOSED_AND_LOCKED_BEEP_STATE to DOOR_CLOSED_AND_UNLOCKED_STATE as valid access detected
@@ -344,7 +338,7 @@ void test_Door_DOOR_CLOSED_AND_LOCKED_BEEP_STATE_and_beep_and_valid_access_detec
 
     StartStop beepAction[]={
     START,STOP,-1                // beep START when invalid access event detected
-    };                              // beep STOP after valid access detected
+    };                          // beep STOP after valid access detected
 
     initTimerAndLowLevelHardware(timeline,(sizeof(timeline)/sizeof(uint32_t)),
                                  solenoidAction,beepAction);
@@ -365,12 +359,12 @@ void test_Door_DOOR_CLOSED_AND_LOCKED_BEEP_STATE_and_beep_and_valid_access_detec
 }
 
 
-//DOOR_CLOSED_AND_UNLOCKED_STATE loop on same state with other event that wont change state
+//DOOR_CLOSED_AND_UNLOCKED_STATE remain on same state with other event that wont change state
 // this code test the handleDoor module when it detected as other state
 // this module will start and remain on DOOR_CLOSED_AND_UNLOCKED_STATE
 // this test shouldnt happened in real life and it tested to avoid if unexpected event happened
 // refer to the state diagram(Resources\images\state diagram.png) for more information
-void test_Door_DOOR_CLOSED_AND_UNLOCKED_STATE_loop_as_other_state_detected(void){
+void test_Door_DOOR_CLOSED_AND_UNLOCKED_STATE_remain_as_other_state_detected(void){
     Event evt = {VALID_DOOR_ACCESS_EVENT,NULL};
     DoorInfo doorInfo = {DOOR_CLOSED_AND_LOCKED_STATE};
     uint32_t timeline[] ={
@@ -402,7 +396,7 @@ void test_Door_DOOR_CLOSED_AND_UNLOCKED_STATE_loop_as_other_state_detected(void)
     TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_UNLOCKED_STATE,doorInfo.state);
     TEST_ASSERT_EQUAL(4,doorInfo.time); // 4 second detected
     TEST_ASSERT_EQUAL(4,doorInfo.timeDiff); // expected 4 second difference from previous state
-    // the door only lock after 10 second
+    // the door only lock after 10 second difference from previous state
 }
 
 //DOOR_CLOSED_AND_UNLOCKED_STATE to DOOR_OPENED_STATE when door opened
@@ -447,7 +441,7 @@ void test_Door_DOOR_CLOSED_AND_UNLOCKED_STATE_door_doesnt_open_and_lock_after_10
     };
     OnOff solenoidAction[]={
     OFF,ON,-1                 // Solenoid will OFF as valid access detected
-    };                          // and turn on after time out for 10 second
+};                          // and turn on after door unlocked for 10 second
     StartStop beepAction[]={
     -1              //Array beepAction empty as it doesnt call beeping()
     };
@@ -464,16 +458,17 @@ void test_Door_DOOR_CLOSED_AND_UNLOCKED_STATE_door_doesnt_open_and_lock_after_10
     TEST_ASSERT_EQUAL(1,doorInfo.time);  //1 sec detected
     TEST_ASSERT_EQUAL(1,doorInfo.timeDiff); // expected 1 second difference from previous state
     handleDoor(&evt,&doorInfo); // expected DOOR_CLOSED_AND_LOCKED_STATE
-    TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_LOCKED_STATE,doorInfo.state); //door expected locked as 10 second past
+    TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_LOCKED_STATE,doorInfo.state);
+    //door expected locked as 10 second past
     TEST_ASSERT_EQUAL(11,doorInfo.time);  //11 sec detected
     TEST_ASSERT_EQUAL(11,doorInfo.timeDiff); // expected 11 second difference from previous state
 }
-//DOOR_OPENED_STATE loop on same state with other event that wont change state
+//DOOR_OPENED_STATE remain on same state with other event that wont change state
 // this code test the handleDoor module when it detected as other state
 // this module will start and remain on DOOR_OPENED_STATE
 // this test shouldnt happened in real life and it tested to avoid if unexpected event happened
 // refer to the state diagram(Resources\images\state diagram.png) for more information
-void test_Door_DOOR_OPENED_STATE_loop_as_other_state_detected(void){
+void test_Door_DOOR_OPENED_STATE_remain_as_other_state_detected(void){
     Event evt = {VALID_DOOR_ACCESS_EVENT,NULL};
     DoorInfo doorInfo = {DOOR_CLOSED_AND_LOCKED_STATE};
     uint32_t timeline[] ={
@@ -492,13 +487,11 @@ void test_Door_DOOR_OPENED_STATE_loop_as_other_state_detected(void){
     handleDoor(&evt,&doorInfo); //valid access detected
     TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_UNLOCKED_STATE,doorInfo.state);
     TEST_ASSERT_EQUAL(0,doorInfo.time);  //0 sec detected
-    // previousTime is 0 here
     evt.type = DOOR_OPENED_EVENT; // DOOR_OPENED happened
     handleDoor(&evt,&doorInfo); //expect DOOR_OPENED_STATE
     TEST_ASSERT_EQUAL(DOOR_OPENED_STATE,doorInfo.state);
     TEST_ASSERT_EQUAL(1,doorInfo.time);  //1 sec detected
     TEST_ASSERT_EQUAL(1,doorInfo.timeDiff); // expected 1 second difference from previous state
-    // previousTime is 1 here
     evt.type = IDLE_EVENT; //  nothing happened
     handleDoor(&evt,&doorInfo); //expect remain at DOOR_OPENED_STATE
     TEST_ASSERT_EQUAL(DOOR_OPENED_STATE,doorInfo.state);
@@ -545,7 +538,7 @@ void test_Door_DOOR_OPENED_STATE_door_opened_more_than_15sec_and_beep(void){
     TEST_ASSERT_EQUAL(1,doorInfo.time);  //1 sec detected
     TEST_ASSERT_EQUAL(1,doorInfo.timeDiff); // expected 1 second difference from previous state
     handleDoor(&evt,&doorInfo); // expected DOOR_OPENED_STATE
-    // beep start here as the door already opened for more than 15 second
+    // beep start as the door already opened for more than 15 second
     TEST_ASSERT_EQUAL(DOOR_OPENED_STATE,doorInfo.state); //remain DOOR_OPENED_STATE and beep
     TEST_ASSERT_EQUAL(17,doorInfo.time);  //17 sec detected
     TEST_ASSERT_EQUAL(16,doorInfo.timeDiff); // expected 16 second difference from previous state
@@ -574,12 +567,10 @@ void test_Door_DOOR_OPENED_STATE_door_opened_then_closed(void){
     TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_UNLOCKED_STATE,doorInfo.state);
     TEST_ASSERT_EQUAL(0,doorInfo.time);  //0 sec detected
     evt.type = DOOR_OPENED_EVENT; //  door opened happened
-    // previousTime is 0 at this point
     handleDoor(&evt,&doorInfo); // expected DOOR_OPENED_STATE
     TEST_ASSERT_EQUAL(DOOR_OPENED_STATE,doorInfo.state);
     TEST_ASSERT_EQUAL(1,doorInfo.time);  //1 sec detected
     TEST_ASSERT_EQUAL(1,doorInfo.timeDiff); // expected 1 second difference from previous state
-    // previousTime is 1 at this point
     evt.type = DOOR_CLOSED_EVENT; //  door closed happened
     handleDoor(&evt,&doorInfo); // expected DOOR_CLOSED_AND_LOCKED_STATE
     TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_LOCKED_STATE,doorInfo.state);
