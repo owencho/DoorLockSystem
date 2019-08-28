@@ -19,14 +19,14 @@ void test_getSolenoidTurnString_input_ON_expect_ON_string_returned(void){
     char * expectString = NULL;
     OnOff swt = ON;
     expectString=getSolenoidTurnString(swt);
-    TEST_ASSERT_EQUAL_STRING(expectString,"ON"); //expected ON as input is ON in OnOff enum
+    TEST_ASSERT_EQUAL_STRING(expectString,"ON"); //expected ON string as input is ON in OnOff enum
 }
 
 void test_getSolenoidTurnString_input_OFF_expect_OFF_string_returned(void){
     char * expectString = NULL;
     OnOff swt = OFF;
     expectString=getSolenoidTurnString(swt);
-    TEST_ASSERT_EQUAL_STRING(expectString,"OFF"); //expected OFF as input is OFF in OnOff enum
+    TEST_ASSERT_EQUAL_STRING(expectString,"OFF"); //expected OFF string as input is OFF in OnOff enum
 }
 
 void test_getSolenoidTurnString_input_weird_expect_NULL_returned(void){
@@ -40,14 +40,14 @@ void test_getBeepActionString_input_START_expect_START_string_returned(void){
     char * expectString = NULL;
     StartStop action = START;
     expectString=getBeepActionString(action);
-    TEST_ASSERT_EQUAL_STRING(expectString,"START");  //expected START as input is START in StartStop enum
+    TEST_ASSERT_EQUAL_STRING(expectString,"START");  //expected START string as input is START in StartStop enum
 }
 
 void test_getBeepActionString_input_STOP_expect_STOP_string_returned(void){
     char * expectString = NULL;
     StartStop action = STOP;
     expectString=getBeepActionString(action);
-    TEST_ASSERT_EQUAL_STRING(expectString,"STOP"); //expected STOP as input is STOP in StartStop enum
+    TEST_ASSERT_EQUAL_STRING(expectString,"STOP"); //expected STOP string as input is STOP in StartStop enum
 }
 
 void test_getBeepActionString_input_weird_expect_NULL_returned(void){

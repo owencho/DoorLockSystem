@@ -95,6 +95,7 @@ void initTimerAndLowLevelHardware(uint32_t timeline[],int timelineNumber,
 void setUp(void){}
 void tearDown(void){}
 
+//to initialize the DoorLock system
 // it will lock the door and stop beep when it reach INIT_STATE
 void test_Door_init_state(void){
     Event evt = {DOOR_INIT_EVENT,NULL};
@@ -186,7 +187,7 @@ void test_Door_invalid_access_and_beep_and_valid_access_detected (void){
     //it will go to DOOR_CLOSED_AND_UNLOCKED_STATE and stop beeping
     TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_UNLOCKED_STATE,doorInfo.state);
     handleDoor(&evt,&doorInfo);
-    TEST_ASSERT_EQUAL(1,doorInfo.time);
+    TEST_ASSERT_EQUAL(1,doorInfo.time); // 1 second detected
     evt.type = DOOR_OPENED_EVENT;
     handleDoor(&evt,&doorInfo); //DOOR opened and expected DOOR_OPENED_STATE
     TEST_ASSERT_EQUAL(2,doorInfo.time); // 2 second detected
@@ -226,7 +227,7 @@ void test_Door_validaccess_and_open_until_door_beep(void){
     evt.type = DOOR_OPENED_EVENT;
     // door detected open
     // Expected DOOR_OPENED_STATE
-    handleDoor(&evt,&doorInfo);
+    handleDoor(&evt,&doorInfo); //10 sec detected so no beep
     TEST_ASSERT_EQUAL(DOOR_OPENED_STATE,doorInfo.state);
     TEST_ASSERT_EQUAL(10,doorInfo.time);
     handleDoor(&evt,&doorInfo); //10 sec detected so no beep
@@ -309,7 +310,7 @@ void test_Door_validaccess_and_did_not_opened_wait_10_sec_stop(void){
     handleDoor(&evt,&doorInfo); // 17 sec detected & DOOR locked & returned to DOOR_CLOSED_AND_LOCKED_STATE
     TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_LOCKED_STATE,doorInfo.state);
     TEST_ASSERT_EQUAL(17,doorInfo.time);
-    evt.type = IDLE_EVENT;
+    evt.type = IDLE_EVENT; //IDLE_EVENT used when no event is happening
     handleDoor(&evt,&doorInfo); // check is system still remain on DOOR_CLOSED_AND_LOCKED_STATE
     TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_LOCKED_STATE,doorInfo.state);
 }
