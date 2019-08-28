@@ -2,7 +2,6 @@
 #define _EVENT_H
 
 typedef enum{
-    DOOR_INIT_EVENT,
     DOOR_OPENED_EVENT,
     DOOR_CLOSED_EVENT,
     VALID_DOOR_ACCESS_EVENT,

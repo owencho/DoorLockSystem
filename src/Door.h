@@ -18,6 +18,7 @@ typedef enum {
 struct DoorInfo{
     DoorState state;
     uint32_t time;
+    uint32_t timeDiff;
 };
 
 void handleDoor(Event *evt,DoorInfo * dInfo);
