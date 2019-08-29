@@ -4,7 +4,6 @@
 #include "Beep.h"
 #include "Timer.h"
 
-int previousTime;
 void handleDoor(Event *evt, DoorInfo * doorInfo){
     switch(doorInfo->state){
         case DOOR_INIT_STATE:
@@ -16,23 +15,23 @@ void handleDoor(Event *evt, DoorInfo * doorInfo){
             if(evt-> type ==VALID_DOOR_ACCESS_EVENT){
                 unlockDoor();
                 doorInfo->time = getTime();
-                previousTime = doorInfo->time;
+                doorInfo->previousTime = doorInfo->time;
                 doorInfo->state = DOOR_CLOSED_AND_UNLOCKED_STATE;
             }
             else if(evt-> type ==INVALID_DOOR_ACCESS_EVENT){
                 beeping(START);
                 doorInfo->state = DOOR_CLOSED_AND_LOCKED_BEEP_STATE;
                 doorInfo->time = getTime();
-                previousTime = doorInfo->time;
+                doorInfo->previousTime = doorInfo->time;
             }
             break;
         case DOOR_CLOSED_AND_LOCKED_BEEP_STATE:
             doorInfo->time = getTime();
-            doorInfo->timeDiff =(doorInfo->time - previousTime);
+            doorInfo->timeDiff =(doorInfo->time - doorInfo->previousTime);
             if(evt-> type ==VALID_DOOR_ACCESS_EVENT){
                 beeping(STOP);
                 unlockDoor();
-                previousTime = doorInfo->time;
+                doorInfo->previousTime = doorInfo->time;
                 doorInfo->state = DOOR_CLOSED_AND_UNLOCKED_STATE;
             }
             else if(doorInfo->timeDiff > 3){
@@ -42,10 +41,10 @@ void handleDoor(Event *evt, DoorInfo * doorInfo){
             break;
         case DOOR_CLOSED_AND_UNLOCKED_STATE:
             doorInfo->time = getTime();
-            doorInfo->timeDiff =(doorInfo->time - previousTime);
+            doorInfo->timeDiff =(doorInfo->time - doorInfo->previousTime);
             if(evt-> type ==DOOR_OPENED_EVENT){
                 doorInfo->state = DOOR_OPENED_STATE;
-                previousTime = doorInfo->time;
+                doorInfo->previousTime = doorInfo->time;
             }
             else if (doorInfo->timeDiff > 10){
                 doorInfo->state = DOOR_CLOSED_AND_LOCKED_STATE;
@@ -54,7 +53,7 @@ void handleDoor(Event *evt, DoorInfo * doorInfo){
             break;
         case DOOR_OPENED_STATE:
             doorInfo->time = getTime();
-            doorInfo->timeDiff =(doorInfo->time - previousTime);
+            doorInfo->timeDiff =(doorInfo->time - doorInfo->previousTime);
             if(evt-> type ==DOOR_CLOSED_EVENT){
                 beeping(STOP);
                 lockDoor();

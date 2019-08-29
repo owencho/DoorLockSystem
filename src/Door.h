@@ -19,6 +19,7 @@ struct DoorInfo{
     DoorState state;
     uint32_t time;
     uint32_t timeDiff;
+    uint32_t previousTime;
 };
 
 void handleDoor(Event *evt,DoorInfo * dInfo);

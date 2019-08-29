@@ -364,7 +364,7 @@ void test_Door_DOOR_CLOSED_AND_LOCKED_BEEP_STATE_and_beep_and_valid_access_detec
 // this module will start and remain on DOOR_CLOSED_AND_UNLOCKED_STATE
 // this test shouldnt happened in real life and it tested to avoid if unexpected event happened
 // refer to the state diagram(Resources\images\state diagram.png) for more information
-void test_Door_DOOR_CLOSED_AND_UNLOCKED_STATE_remain_as_other_state_detected(void){
+void test_Door_DOOR_CLOSED_AND_UNLOCKED_STATE_remain_as_other_event_detected(void){
     Event evt = {VALID_DOOR_ACCESS_EVENT,NULL};
     DoorInfo doorInfo = {DOOR_CLOSED_AND_LOCKED_STATE};
     uint32_t timeline[] ={
@@ -410,6 +410,7 @@ void test_Door_DOOR_CLOSED_AND_UNLOCKED_STATE_door_opened(void){
     0,1           // time generated for system to check the time
     };
     OnOff solenoidAction[]={
+
     OFF,-1                 // Solenoid will OFF as valid access detected
     };
     StartStop beepAction[]={
@@ -457,6 +458,7 @@ void test_Door_DOOR_CLOSED_AND_UNLOCKED_STATE_door_doesnt_open_and_lock_after_10
     TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_UNLOCKED_STATE,doorInfo.state);
     TEST_ASSERT_EQUAL(1,doorInfo.time);  //1 sec detected
     TEST_ASSERT_EQUAL(1,doorInfo.timeDiff); // expected 1 second difference from previous state
+    TEST_ASSERT_EQUAL(0,doorInfo.previousTime); // expected previous State time is 0
     handleDoor(&evt,&doorInfo); // expected DOOR_CLOSED_AND_LOCKED_STATE
     TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_LOCKED_STATE,doorInfo.state);
     //door expected locked as 10 second past
@@ -468,7 +470,7 @@ void test_Door_DOOR_CLOSED_AND_UNLOCKED_STATE_door_doesnt_open_and_lock_after_10
 // this module will start and remain on DOOR_OPENED_STATE
 // this test shouldnt happened in real life and it tested to avoid if unexpected event happened
 // refer to the state diagram(Resources\images\state diagram.png) for more information
-void test_Door_DOOR_OPENED_STATE_remain_as_other_state_detected(void){
+void test_Door_DOOR_OPENED_STATE_remain_as_other_event_detected(void){
     Event evt = {VALID_DOOR_ACCESS_EVENT,NULL};
     DoorInfo doorInfo = {DOOR_CLOSED_AND_LOCKED_STATE};
     uint32_t timeline[] ={
@@ -488,25 +490,29 @@ void test_Door_DOOR_OPENED_STATE_remain_as_other_state_detected(void){
     TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_UNLOCKED_STATE,doorInfo.state);
     TEST_ASSERT_EQUAL(0,doorInfo.time);  //0 sec detected
     evt.type = DOOR_OPENED_EVENT; // DOOR_OPENED happened
-    handleDoor(&evt,&doorInfo); //expect DOOR_OPENED_STATE
+    handleDoor(&evt,&doorInfo); //expect assigned to DOOR_OPENED_STATE
     TEST_ASSERT_EQUAL(DOOR_OPENED_STATE,doorInfo.state);
     TEST_ASSERT_EQUAL(1,doorInfo.time);  //1 sec detected
     TEST_ASSERT_EQUAL(1,doorInfo.timeDiff); // expected 1 second difference from previous state
+    TEST_ASSERT_EQUAL(1,doorInfo.previousTime); // expected previous State time is 1
     evt.type = IDLE_EVENT; //  nothing happened
     handleDoor(&evt,&doorInfo); //expect remain at DOOR_OPENED_STATE
     TEST_ASSERT_EQUAL(DOOR_OPENED_STATE,doorInfo.state);
     TEST_ASSERT_EQUAL(2,doorInfo.time);  //2 sec detected
     TEST_ASSERT_EQUAL(1,doorInfo.timeDiff); // expected 1 second difference from previous state
+    TEST_ASSERT_EQUAL(1,doorInfo.previousTime); // expected previous State time is 1
     evt.type = VALID_DOOR_ACCESS_EVENT; // valid access detected
     handleDoor(&evt,&doorInfo); //expect remain at DOOR_OPENED_STATE
     TEST_ASSERT_EQUAL(3,doorInfo.time);  //3 sec detected
     TEST_ASSERT_EQUAL(2,doorInfo.timeDiff); // expected 2 second difference from previous state
+    TEST_ASSERT_EQUAL(1,doorInfo.previousTime); // expected previous State time is 1
     TEST_ASSERT_EQUAL(DOOR_OPENED_STATE,doorInfo.state);
     evt.type = INVALID_DOOR_ACCESS_EVENT; // valid access detected
     handleDoor(&evt,&doorInfo); //expect remain at DOOR_OPENED_STATE
     TEST_ASSERT_EQUAL(DOOR_OPENED_STATE,doorInfo.state);
     TEST_ASSERT_EQUAL(4,doorInfo.time);  //4 sec detected
     TEST_ASSERT_EQUAL(3,doorInfo.timeDiff); // expected 3 second difference from previous state
+    TEST_ASSERT_EQUAL(1,doorInfo.previousTime); // expected previous State time is 1
 }
 //DOOR_OPENED_STATE after 15 second beep
 // this code test the handleDoor module when door opened for more than 15 second on
@@ -533,7 +539,7 @@ void test_Door_DOOR_OPENED_STATE_door_opened_more_than_15sec_and_beep(void){
     TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_UNLOCKED_STATE,doorInfo.state);
     TEST_ASSERT_EQUAL(0,doorInfo.time);  //0 sec detected
     evt.type = DOOR_OPENED_EVENT; //  door opened happened
-    handleDoor(&evt,&doorInfo); //door open detected , expected DOOR_OPENED_STATE
+    handleDoor(&evt,&doorInfo); //door open detected , expected assigned to DOOR_OPENED_STATE
     TEST_ASSERT_EQUAL(DOOR_OPENED_STATE,doorInfo.state);
     TEST_ASSERT_EQUAL(1,doorInfo.time);  //1 sec detected
     TEST_ASSERT_EQUAL(1,doorInfo.timeDiff); // expected 1 second difference from previous state
@@ -542,6 +548,8 @@ void test_Door_DOOR_OPENED_STATE_door_opened_more_than_15sec_and_beep(void){
     TEST_ASSERT_EQUAL(DOOR_OPENED_STATE,doorInfo.state); //remain DOOR_OPENED_STATE and beep
     TEST_ASSERT_EQUAL(17,doorInfo.time);  //17 sec detected
     TEST_ASSERT_EQUAL(16,doorInfo.timeDiff); // expected 16 second difference from previous state
+    TEST_ASSERT_EQUAL(1,doorInfo.previousTime);
+    // expected previous State time is 1 as the time is recorded when changing state from closed unlocked to opened
 }
 //DOOR_OPENED_STATE to DOOR_CLOSED_AND_LOCKED_STATE after door was closed
 // this code test the handleDoor module when door opened then closed
@@ -568,7 +576,7 @@ void test_Door_DOOR_OPENED_STATE_door_opened_then_closed(void){
     TEST_ASSERT_EQUAL(0,doorInfo.time);  //0 sec detected
     evt.type = DOOR_OPENED_EVENT; //  door opened happened
     handleDoor(&evt,&doorInfo); // expected DOOR_OPENED_STATE
-    TEST_ASSERT_EQUAL(DOOR_OPENED_STATE,doorInfo.state);
+    TEST_ASSERT_EQUAL(DOOR_OPENED_STATE,doorInfo.state);// expected assigned to DOOR_OPENED_STATE
     TEST_ASSERT_EQUAL(1,doorInfo.time);  //1 sec detected
     TEST_ASSERT_EQUAL(1,doorInfo.timeDiff); // expected 1 second difference from previous state
     evt.type = DOOR_CLOSED_EVENT; //  door closed happened
@@ -576,6 +584,8 @@ void test_Door_DOOR_OPENED_STATE_door_opened_then_closed(void){
     TEST_ASSERT_EQUAL(DOOR_CLOSED_AND_LOCKED_STATE,doorInfo.state);
     TEST_ASSERT_EQUAL(3,doorInfo.time);  //3 sec detected
     TEST_ASSERT_EQUAL(2,doorInfo.timeDiff); // expected 2 second difference from previous state
+    TEST_ASSERT_EQUAL(1,doorInfo.previousTime);
+    // expected previous State time is 1 as the time is recorded when changing state from closed unlocked to opened
 }
 
 /*
