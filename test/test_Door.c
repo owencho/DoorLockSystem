@@ -375,7 +375,7 @@ void test_Door_DOOR_CLOSED_AND_UNLOCKED_STATE_remain_as_other_event_detected(voi
     };
     StartStop beepAction[]={
     -1              //Array beepAction empty as it doesnt call beeping()
-  };
+    };
     initTimerAndLowLevelHardware(timeline,(sizeof(timeline)/sizeof(uint32_t)),
                                  solenoidAction,beepAction);
     // in closed and locked state with valid access card detected
@@ -410,7 +410,6 @@ void test_Door_DOOR_CLOSED_AND_UNLOCKED_STATE_door_opened(void){
     0,1           // time generated for system to check the time
     };
     OnOff solenoidAction[]={
-
     OFF,-1                 // Solenoid will OFF as valid access detected
     };
     StartStop beepAction[]={
@@ -442,7 +441,7 @@ void test_Door_DOOR_CLOSED_AND_UNLOCKED_STATE_door_doesnt_open_and_lock_after_10
     };
     OnOff solenoidAction[]={
     OFF,ON,-1                 // Solenoid will OFF as valid access detected
-};                          // and turn on after door unlocked for 10 second
+    };                          // and turn on after door unlocked for 10 second
     StartStop beepAction[]={
     -1              //Array beepAction empty as it doesnt call beeping()
     };
@@ -481,7 +480,7 @@ void test_Door_DOOR_OPENED_STATE_remain_as_other_event_detected(void){
     };
     StartStop beepAction[]={
     -1              //Array beepAction empty as it doesnt call beeping()
-  };
+    };
     initTimerAndLowLevelHardware(timeline,(sizeof(timeline)/sizeof(uint32_t)),
                                  solenoidAction,beepAction);
     // in closed and locked state with valid access card detected
@@ -563,7 +562,7 @@ void test_Door_DOOR_OPENED_STATE_door_opened_then_closed(void){
     };
     OnOff solenoidAction[]={
      OFF,ON ,-1                 // Solenoid will OFF as valid access detected
-   };                           // Solenoid will ON after the door was closed
+    };                           // Solenoid will ON after the door was closed
     StartStop beepAction[]={
     STOP,-1              // beep will STOP as the door closed
     };
